@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "twistora",
+  "compatibility_date": "2024-10-10",
+  "assets": {
+    "directory": "./dist"
+  }
+}
