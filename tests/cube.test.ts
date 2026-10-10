@@ -80,10 +80,11 @@ describe('cube.test.ts', () => {
     expect((cube as any).scene.background.getHex()).toBe(0xf6f8fb);
   });
 
-  it('solver returns a valid solution and applying it solves the cube', () => {
+  it('solver returns a valid solution from the current state after additional manual moves', () => {
     const cube = new CubeSolver();
-    const scramble = "R U R' U' F2 D B2 L";
-    cube.move(scramble);
+    cube.move("R U R' U' F2 D B2 L");
+    cube.move('R');
+    cube.move("U'");
     expect(cube.isSolved()).toBe(false);
 
     const solution = cube.solve();
@@ -91,5 +92,28 @@ describe('cube.test.ts', () => {
 
     cube.move(solution);
     expect(cube.isSolved()).toBe(true);
+  });
+
+  it('solver handles valid middle-slice states and solves them', () => {
+    const cube = new CubeSolver();
+    cube.move("M U M' U'");
+    expect(cube.isSolved()).toBe(false);
+
+    const solution = cube.solve();
+    expect(solution.length).toBeGreaterThan(0);
+
+    cube.move(solution);
+    expect(cube.isSolved()).toBe(true);
+  });
+
+  it('throws a controlled error for invalid cube state metadata', () => {
+    const cube = new CubeSolver();
+    (cube as any).cube = {
+      toJSON: () => ({ center: [0, 1, 2, 3, 4, 5, 6], cp: [0, 1, 2, 3, 4, 5, 6, 7], co: [0, 0, 0, 0, 0, 0, 0, 0], ep: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }),
+      isSolved: () => false,
+      solve: () => 'R'
+    };
+
+    expect(() => cube.solve()).toThrow(/Invalid cube state/i);
   });
 });
