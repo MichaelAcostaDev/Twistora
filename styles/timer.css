@@ -1,0 +1,222 @@
+/* Timer and Scramble Styles */
+
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  position: relative;
+  user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.timer-container:hover {
+  border-color: var(--border-focus);
+}
+
+.timer-container:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 4px;
+}
+
+/* Scramble Box */
+.scramble-box {
+  width: 100%;
+  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scramble-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.scramble-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.scramble-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scramble-text {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-align: center;
+  word-break: break-word;
+  user-select: all;
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+}
+
+.scramble-move-token {
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+/* Timer Digits Display */
+.timer-digits-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.timer-digits {
+  font-family: var(--font-mono);
+  font-size: clamp(3.5rem, 9vw, 6.5rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--timer-idle);
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+/* State Styling for Timer */
+.timer-container[data-state="idle"] .timer-digits {
+  color: var(--timer-idle);
+}
+
+.timer-container[data-state="holding"] .timer-digits {
+  color: var(--timer-holding);
+  transform: scale(0.98);
+}
+
+.timer-container[data-state="ready"] .timer-digits {
+  color: var(--timer-ready);
+  transform: scale(1.02);
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.timer-container[data-state="running"] .timer-digits {
+  color: var(--timer-running);
+}
+
+.timer-container[data-state="stopped"] .timer-digits {
+  color: var(--timer-stopped);
+}
+
+/* Hold Progress Bar */
+.hold-progress-bar {
+  width: 140px;
+  height: 4px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.hold-progress-fill {
+  width: 0%;
+  height: 100%;
+  background-color: var(--timer-holding);
+  transition: width 50ms linear;
+}
+
+.timer-container[data-state="ready"] .hold-progress-fill {
+  width: 100%;
+  background-color: var(--timer-ready);
+}
+
+/* Timer Hint & Status Badge */
+.timer-hint {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.timer-container[data-state="ready"] .timer-status-badge {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--timer-ready);
+}
+
+.timer-container[data-state="running"] .timer-status-badge {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--timer-running);
+}
+
+/* Timer Control Options Bar */
+.timer-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.timer-option-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.penalty-tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.penalty-tag.dnf {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--accent-danger);
+}
+
+.penalty-tag.plus2 {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: var(--timer-holding);
+}

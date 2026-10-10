@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twistora — Professional Speedcubing Timer & 3D Cube Simulator</title>
+  <meta name="description" content="Twistora: precision speedcubing timer with WCA scramble generator, solve statistics, and interactive 3D Rubik's Cube simulator with automated Kociemba two-phase solver." />
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="./styles/main.css" />
+  <link rel="stylesheet" href="./styles/timer.css" />
+  <link rel="stylesheet" href="./styles/cube.css" />
+
+  <!-- Native Browser Import Map for Three.js ES Modules -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./node_modules/three/build/three.module.js",
+      "three/addons/": "./node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header" role="banner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <h1 class="brand-title">Twistora</h1>
+        <span class="brand-badge">WCA 3×3×3</span>
+      </div>
+
+      <nav class="app-nav" role="navigation" aria-label="Main Navigation">
+        <button id="nav-btn-dual" class="nav-tab-btn active" data-tab="dual" aria-selected="true">
+          <span>Timer & 3D Cube</span>
+        </button>
+        <button id="nav-btn-timer" class="nav-tab-btn" data-tab="timer" aria-selected="false">
+          <span>Timer Solo</span>
+        </button>
+        <button id="nav-btn-cube" class="nav-tab-btn" data-tab="cube" aria-selected="false">
+          <span>3D Simulator</span>
+        </button>
+        <button id="nav-btn-stats" class="nav-tab-btn" data-tab="stats" aria-selected="false">
+          <span>Statistics</span>
+        </button>
+        <button id="nav-btn-trainer" class="nav-tab-btn" data-tab="trainer" aria-selected="false">
+          <span>Notation Trainer</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button id="btn-theme-toggle" class="action-btn" aria-label="Toggle dark/light theme" title="Toggle Theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button id="btn-hold-toggle" class="action-btn" aria-label="Change timer hold threshold" title="Toggle hold threshold: 1s or 2s">
+          <span id="hold-threshold-label">Hold: 1.0s</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-content" id="main-content" role="main">
+      
+      <!-- Dual View Section (Default) -->
+      <section id="view-dual" class="view-section active" aria-label="Dual Timer and 3D Cube View">
+        <div class="dual-view-grid">
+          <!-- Left Column: Scramble & Timer -->
+          <div class="timer-column">
+            <!-- Scramble Card -->
+            <div class="scramble-box" id="scramble-container" aria-label="Active Scramble">
+              <div class="scramble-header">
+                <span class="scramble-label">3×3×3 Scramble</span>
+                <div class="scramble-actions">
+                  <button id="btn-copy-scramble" class="action-btn" title="Copy scramble sequence" aria-label="Copy scramble">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  </button>
+                  <button id="btn-sync-cube" class="action-btn" title="Apply this scramble to virtual 3D cube" aria-label="Apply to 3D cube">
+                    <span>Apply to 3D</span>
+                  </button>
+                  <button id="btn-new-scramble" class="action-btn" title="Generate new random scramble" aria-label="New scramble">
+                    <span>New Scramble</span>
+                  </button>
+                </div>
+              </div>
+              <div id="scramble-display" class="scramble-text" aria-live="polite">Loading scramble...</div>
+            </div>
+
+            <!-- Timer Card -->
+            <div id="timer-box" class="timer-container" data-state="idle" tabindex="0" role="region" aria-label="Speedcubing Timer. Press and hold space or click and hold to start.">
+              <div class="timer-digits-wrapper">
+                <div id="timer-display" class="timer-digits">00:00.00</div>
+                <div class="hold-progress-bar" aria-hidden="true">
+                  <div id="hold-progress-fill" class="hold-progress-fill"></div>
+                </div>
+              </div>
+
+              <div class="timer-hint">
+                <span id="timer-status-badge" class="timer-status-badge">Idle</span>
+                <span id="timer-instruction">Hold [Space] or Click & Hold to Ready</span>
+              </div>
+
+              <div class="timer-options">
+                <div class="timer-option-group">
+                  <span>Last: <strong id="quick-last-time">--</strong></span>
+                  <span id="quick-last-penalty"></span>
+                </div>
+                <div class="timer-option-group">
+                  <span>Ao5: <strong id="quick-ao5">--</strong></span>
+                  <span>|</span>
+                  <span>Ao12: <strong id="quick-ao12">--</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: 3D Rubik's Cube Simulator -->
+          <div class="cube-column">
+            <div class="cube-container" id="cube-widget-container">
+              <!-- Top Canvas Overlay -->
+              <div class="cube-overlay-top">
+                <div id="cube-status-chip" class="cube-status-chip solved">
+                  <span id="cube-status-text">Solved State</span>
+                </div>
+                <div class="cube-overlay-actions">
+                  <button id="btn-reset-camera" class="overlay-btn" title="Reset Camera View" aria-label="Reset Camera">
+                    <span>Reset View</span>
+                  </button>
+                  <button id="btn-reset-solved" class="overlay-btn" title="Reset Cube to Solved State" aria-label="Reset Solved">
+                    <span>Reset Solved</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3D Viewport -->
+              <div class="cube-canvas-wrapper" id="cube-canvas-host" tabindex="0" aria-label="Interactive 3D Rubik's Cube. Click and drag to rotate camera.">
+                <!-- Three.js WebGL canvas mounts here -->
+              </div>
+
+              <!-- Action Bar -->
+              <div class="cube-actions-bar">
+                <div class="cube-main-buttons">
+                  <button id="btn-scramble-cube" class="btn-primary" aria-label="Scramble virtual 3D cube">
+                    <span>Scramble Cube</span>
+                  </button>
+                  <button id="btn-solve-cube" class="btn-secondary" aria-label="Compute and execute automatic solve">
+                    <span>Solve Cube</span>
+                  </button>
+                  <button id="btn-stop-animation" class="btn-danger" style="display: none;" aria-label="Stop ongoing animation sequence">
+                    <span>Stop</span>
+                  </button>
+                </div>
+                <div class="cube-options-group">
+                  <label for="cube-speed-select" style="font-size: 0.75rem; color: var(--text-muted); margin-right: 0.25rem;">Speed:</label>
+                  <select id="cube-speed-select" aria-label="Animation Speed">
+                    <option value="fast">Fast (100ms)</option>
+                    <option value="normal" selected>Normal (200ms)</option>
+                    <option value="slow">Slow (400ms)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Solver Solution Moves Banner -->
+              <div id="solver-solution-container" class="solver-solution-banner" style="display: none;">
+                <div class="solver-solution-header">
+                  <span>Computed Two-Phase Solution:</span>
+                  <span id="solution-step-count">0 moves</span>
+                </div>
+                <div id="solution-moves-list" class="solver-solution-moves">--</div>
+              </div>
+
+              <!-- Manual Move Buttons Panel (Outer Faces + Middle Slices M, E, S) -->
+              <div class="cube-move-panel" id="manual-move-panel">
+                <div class="move-panel-title">
+                  <span>Manual Face & Middle-Slice Controls</span>
+                  <span style="font-size: 0.6875rem; text-transform: none; color: var(--text-muted);">Clockwise / Counterclockwise / Double</span>
+                </div>
+                
+                <div class="move-grid-container">
+                  <!-- Outer Face Turns -->
+                  <div>
+                    <span class="move-section-label">Outer Faces</span>
+                    <div class="move-grid-outer">
+                      <!-- U Face -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="U" aria-label="Turn Up face clockwise">U</button>
+                        <button class="move-btn" data-move="U'" aria-label="Turn Up face counterclockwise">U'</button>
+                        <button class="move-btn" data-move="U2" aria-label="Turn Up face 180 degrees">U2</button>
+                      </div>
+                      <!-- D Face -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="D" aria-label="Turn Down face clockwise">D</button>
+                        <button class="move-btn" data-move="D'" aria-label="Turn Down face counterclockwise">D'</button>
+                        <button class="move-btn" data-move="D2" aria-label="Turn Down face 180 degrees">D2</button>
+                      </div>
+                      <!-- L Face -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="L" aria-label="Turn Left face clockwise">L</button>
+                        <button class="move-btn" data-move="L'" aria-label="Turn Left face counterclockwise">L'</button>
+                        <button class="move-btn" data-move="L2" aria-label="Turn Left face 180 degrees">L2</button>
+                      </div>
+                      <!-- R Face -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="R" aria-label="Turn Right face clockwise">R</button>
+                        <button class="move-btn" data-move="R'" aria-label="Turn Right face counterclockwise">R'</button>
+                        <button class="move-btn" data-move="R2" aria-label="Turn Right face 180 degrees">R2</button>
+                      </div>
+                      <!-- F Face -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="F" aria-label="Turn Front face clockwise">F</button>
+                        <button class="move-btn" data-move="F'" aria-label="Turn Front face counterclockwise">F'</button>
+                        <button class="move-btn" data-move="F2" aria-label="Turn Front face 180 degrees">F2</button>
+                      </div>
+                      <!-- B Face -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="B" aria-label="Turn Back face clockwise">B</button>
+                        <button class="move-btn" data-move="B'" aria-label="Turn Back face counterclockwise">B'</button>
+                        <button class="move-btn" data-move="B2" aria-label="Turn Back face 180 degrees">B2</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Middle Slice Turns -->
+                  <div>
+                    <span class="move-section-label">Middle Slices</span>
+                    <div class="move-grid-slice">
+                      <!-- M Slice -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="M" aria-label="Turn Middle slice M (L direction)">M</button>
+                        <button class="move-btn" data-move="M'" aria-label="Turn Middle slice M' (R direction)">M'</button>
+                        <button class="move-btn" data-move="M2" aria-label="Turn Middle slice M2">M2</button>
+                      </div>
+                      <!-- E Slice -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="E" aria-label="Turn Equatorial slice E (D direction)">E</button>
+                        <button class="move-btn" data-move="E'" aria-label="Turn Equatorial slice E' (U direction)">E'</button>
+                        <button class="move-btn" data-move="E2" aria-label="Turn Equatorial slice E2">E2</button>
+                      </div>
+                      <!-- S Slice -->
+                      <div class="move-col">
+                        <button class="move-btn" data-move="S" aria-label="Turn Standing slice S (F direction)">S</button>
+                        <button class="move-btn" data-move="S'" aria-label="Turn Standing slice S' (B direction)">S'</button>
+                        <button class="move-btn" data-move="S2" aria-label="Turn Standing slice S2">S2</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Bottom: Statistics Summary & Solves -->
+        <div class="dashboard-bottom-grid">
+          <!-- Stats Cards -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Performance Statistics</span>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="stat-label">Solves</span>
+                <span class="stat-value" id="stat-count">0</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Best Single</span>
+                <span class="stat-value pb" id="stat-best">--</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Worst Single</span>
+                <span class="stat-value" id="stat-worst">--</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Session Mean</span>
+                <span class="stat-value" id="stat-mean">--</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Current Ao5</span>
+                <span class="stat-value" id="stat-curr-ao5">--</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Best Ao5</span>
+                <span class="stat-value pb" id="stat-best-ao5">--</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Current Ao12</span>
+                <span class="stat-value" id="stat-curr-ao12">--</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Best Ao12</span>
+                <span class="stat-value pb" id="stat-best-ao12">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Solve History Table -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Solve History</span>
+              <div class="history-header-actions">
+                <button id="btn-clear-solves" class="action-btn" title="Clear all solves in session" aria-label="Clear all solves">
+                  <span>Clear All</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="history-table-wrapper" id="history-table-container">
+              <!-- Rendered via SolvesManager -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notation Trainer View -->
+      <section id="view-trainer" class="view-section" aria-label="Rubik's Cube Move Notation Trainer">
+        <div class="card trainer-card">
+          <div class="card-header">
+            <span class="card-title">Standard 3×3×3 Cube Move Notation Guide</span>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.875rem;">
+            Click any move below to execute and preview its rotation directly on the 3D Rubik's Cube above. Standard Singmaster notation defines clockwise turns relative to looking directly at the face being turned. Middle slices M, E, S follow L, D, F respectively.
+          </p>
+          <div class="trainer-grid" id="trainer-grid-container">
+            <!-- Populated dynamically via main.ts -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer with Developer Credit and SVG Icons -->
+    <footer class="app-footer" role="contentinfo">
+      <div class="footer-credit">
+        <span>Made by <span class="developer-name">MichaelAcostaDev</span></span>
+      </div>
+      <div class="footer-social-links">
+        <a href="https://github.com/MichaelAcostaDev" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="social-link" 
+           aria-label="MichaelAcostaDev on GitHub" 
+           title="GitHub - MichaelAcostaDev">
+          <!-- Small inline SVG icon for GitHub -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+        <a href="https://www.linkedin.com/in/michael-acosta-dev" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="social-link" 
+           aria-label="MichaelAcostaDev on LinkedIn" 
+           title="LinkedIn - MichaelAcostaDev">
+          <!-- Small inline SVG icon for LinkedIn -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+          </svg>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="./dist/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "rubik-timer-3d",
+  "version": "1.0.0",
+  "description": "Twistora: Professional Speedcubing Timer and Interactive 3D Rubik's Cube Simulator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node server.js",
+    "dev": "tsc && node server.js",
+    "test": "vitest run tests/",
+    "test:watch": "vitest tests/",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "^0.165.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.165.0",
+    "happy-dom": "^14.12.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src/**/*"]
+}
