@@ -47,15 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const refreshScramble = () => {
-    if (cube) {
-      try {
-        const sc = cube.getSolver().scramble();
-        setNewScramble(sc);
-        return;
-      } catch {
-        // Fallback
-      }
-    }
     setNewScramble(generateScramble(21));
   };
   refreshScramble();

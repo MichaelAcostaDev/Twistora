@@ -31,8 +31,6 @@ const patchModulePath = (filePath) => {
   }
 };
 
-fs.rmSync(distDir, { recursive: true, force: true });
-
 ensureFile(path.join(rootDir, 'index.html'), path.join(distDir, 'index.html'));
 copyDir(path.join(rootDir, 'styles'), path.join(distDir, 'styles'));
 copyDir(path.join(rootDir, 'assets'), path.join(distDir, 'assets'));
@@ -46,6 +44,9 @@ if (fs.existsSync(threeSource)) {
 
 const htmlText = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
 const adjustedHtml = htmlText.replace(
+  'src="./dist/main.js"',
+  'src="./main.js"'
+).replace(
   '"three": "./node_modules/three/build/three.module.js"',
   '"three": "./vendor/three/build/three.module.js"'
 ).replace(
@@ -53,6 +54,10 @@ const adjustedHtml = htmlText.replace(
   '"three/addons/": "./vendor/three/examples/jsm/"'
 );
 fs.writeFileSync(path.join(distDir, 'index.html'), adjustedHtml, 'utf8');
+
+if (!fs.existsSync(path.join(distDir, 'main.js'))) {
+  throw new Error('The compiled application entry dist/main.js is missing.');
+}
 
 for (const file of fs.readdirSync(distDir)) {
   if (file.endsWith('.js')) {

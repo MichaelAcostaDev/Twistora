@@ -1,0 +1,7 @@
+services:
+  twistora-preview:
+    build:
+      context: .
+    ports:
+      - "8787:8787"
+    init: true
